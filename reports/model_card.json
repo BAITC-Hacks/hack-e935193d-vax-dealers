@@ -4,49 +4,52 @@
       "leaves": 15,
       "iterations": 180,
       "lr": 0.06,
-      "n": 2900,
-      "MAE": 0.21510639696540387,
-      "RMSE": 0.2790132098589068,
-      "bias": 0.020027138164866985
+      "n": 2896,
+      "MAE": 0.21395556579630096,
+      "RMSE": 0.27649868238468445,
+      "bias": 0.0155571585621782
     },
     {
       "leaves": 31,
       "iterations": 180,
       "lr": 0.06,
-      "n": 2900,
-      "MAE": 0.21456653321393024,
-      "RMSE": 0.27835204447864903,
-      "bias": 0.026659896673058223
+      "n": 2896,
+      "MAE": 0.21381545705394073,
+      "RMSE": 0.27633744620297873,
+      "bias": 0.02327218960160424
     },
     {
       "leaves": 15,
       "iterations": 300,
       "lr": 0.04,
-      "n": 2900,
-      "MAE": 0.21509851038202774,
-      "RMSE": 0.2797095602252675,
-      "bias": 0.02117323152296643
+      "n": 2896,
+      "MAE": 0.21403405984466872,
+      "RMSE": 0.2786927322092059,
+      "bias": 0.018266227699326665
     }
   ],
   "selected": {
     "leaves": 31,
     "iterations": 180,
     "lr": 0.06,
-    "n": 2900,
-    "MAE": 0.21456653321393024,
-    "RMSE": 0.27835204447864903,
-    "bias": 0.026659896673058223
+    "n": 2896,
+    "MAE": 0.21381545705394073,
+    "RMSE": 0.27633744620297873,
+    "bias": 0.02327218960160424
   },
-  "training_rows": 85980,
-  "training_unique_hours": 28660,
-  "train_target_end": "2025-12-31 23:00 local",
-  "validation": "2025-12",
+  "training_rows": 85974,
+  "training_unique_hours": 28658,
+  "train_target_end": "2025-12-31 22:00:00",
+  "target_available_at": "2025-12-31 23:00:00",
+  "point_model_ready_local": "2025-12-31 23:00:00",
+  "replay_ready_local": "2026-01-31 23:00:00",
+  "validation": "2025-12 (completed hours only)",
   "test_and_interval_calibration": "2026-01",
   "interval_radii": {
-    "1_1": 0.45691700953298237,
-    "1_2": 0.5130962297208785,
-    "2_1": 0.45495340452999744,
-    "2_2": 0.5176827282613132
+    "1_1": 0.449372993649662,
+    "1_2": 0.5134930843934186,
+    "2_1": 0.45124566843216535,
+    "2_2": 0.5277049803598292
   },
   "features": [
     "wind",
@@ -61,7 +64,16 @@
     "turbine_id"
   ],
   "target": "mean normalized active power",
-  "timezone_assumption": "UTC+05:00",
+  "timezone_offset_hours": 5,
+  "time_assumptions_confirmed": false,
   "weather_latency_assumption_hours": 12,
+  "model_sha256": "bad06bc49ef6e50e4c2feca0d53beca9f3d5e053f3f2065c22d5470db5a1a95c",
+  "hourly_sha256": "13304ed16a0f2cb83b979459c01933a332819b02b5bc33dcb8700f9347a0279c",
+  "code_sha256": {
+    "wind_agent.py": "0a5fb7c55373eb565e5094fe6209daa521e42ee2b314c088c5df8a4a7985f6f1",
+    "weather_archive.py": "c898cf0346ec159c6eba581a0f5e136e422e9f4d74c00c0fe4dc5c3c841519d7",
+    "config.json": "46e49586c4160e7ca6d68057768f2735fa0b49627c4b243608d28dd5e9a010e2"
+  },
+  "january_fallback_rows": 0,
   "archive_provenance": "Fixed lead offsets; publication timestamps not supplied by API"
 }

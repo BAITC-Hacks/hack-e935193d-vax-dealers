@@ -1,14 +1,15 @@
 {
-  "README.md": "6afae76d9696b602fb108feab413fc6f416e72e8af1f761b2c2fbe3894e84711",
-  "wind_agent.py": "89222a2d5194f268d808910ec3a3e99f95d497bc704561d44a4eb518c1b101dc",
-  "requirements.txt": "45491584225d9203cdc374c299060987d033e0470953931253caf12654219127",
-  ".gitignore": "31558b4e52235bc6a7434c4f51c2ce0519eaea5c02277bb4d5dab3ec498bbf6d",
-  "tests/test_agent.py": "140fe38ef28150cf5972ed089e4ec1f079e1b596366103d311231da6e0cc4d0a",
-  "reports/data_audit.json": "215d5051fefae7a76d9566746e9df103b29686b365fffa845c54b277ed637129",
-  "reports/model_card.json": "494fc5d73b40800e67b6a1f929617fc5bdba822ca4ed13dab4bcc9de04ac9822",
-  "reports/january_metrics.csv": "7669cbd78044b7dd0dedf2dec38e438128297ae9a45213abdb60437f4ab2e349",
-  "reports/tests.txt": "ce4662699d7bf1e9002a5ad225559de477d2ce104efdbaa9ae2fe3b35191a877",
-  "reports/weather_manifest.json": "c2516190a8365da1ba276dc9875ad0b19e58325db15ebab0a969cc31d9abb248",
-  "results/run_summary.json": "a8dde5b0a0352bf90de900726e7097b22b9d7b86608ed2a72a1ca2464a08618e",
-  "results/forecast_results.zip": "c359524e0d8450e932ef62ac6b918f1152043a8abf71cfbbef499f94b5750432"
+  "README.md": "83bb41a209f21bda3c83b2ace89d8aebe41432614852e819d4af0eedfe9d2c65",
+  "requirements.txt": "a1da224df4a8e9163cabaff3e506f5b309827f7eec8c61f55faa7ad4441b5be2",
+  "config.json": "46e49586c4160e7ca6d68057768f2735fa0b49627c4b243608d28dd5e9a010e2",
+  "wind_agent.py": "0a5fb7c55373eb565e5094fe6209daa521e42ee2b314c088c5df8a4a7985f6f1",
+  "weather_archive.py": "c898cf0346ec159c6eba581a0f5e136e422e9f4d74c00c0fe4dc5c3c841519d7",
+  "tests/test_agent.py": "969948c03fbd1ebb326df8830e5a91847ab78dc809f383612d1c96dce672155c",
+  "tests/test_regressions.py": "b3baae36c177022ae2edec114e13dba844c6edb70ed99e3c346ef97ba1b22f65",
+  "reports/data_audit.json": "c73213a547a728c7982f601af7f7b6503c481f49df5855095802cdc6597ae78f",
+  "reports/model_card.json": "872c80f303debf4d0b5afb03b1f66c03218d9fa6baf97dfef4f30c2a4efef11d",
+  "reports/january_metrics.csv": "45379ecd6e1c27d376a41dbbd329a5c06703312c35edd35a5cacc934320d89a4",
+  "reports/weather_manifest.json": "47068d4a723de1892f451c821c453f0fa63a1ea043279b3166ee07db58105889",
+  "results/run_summary.json": "56dfce2c3f4df2dbd0a2271047cf080aa5edf67745bc62b2a0907602e2f9f666",
+  "results/forecast_results.zip": "8edf40e17d23910c7b40ce2567c0fcd3e19ffe9f34f4037dcf4c4311d47d50ad"
 }

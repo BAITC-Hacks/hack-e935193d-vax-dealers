@@ -1,0 +1,5 @@
+{
+  "utc_offset_hours": 5,
+  "weather_latency_hours": 12,
+  "time_assumptions_confirmed": false
+}

@@ -1,0 +1,18 @@
+December validation {'leaves': 15, 'iterations': 180, 'lr': 0.06, 'n': 2896, 'MAE': 0.21395556579630096, 'RMSE': 0.27649868238468445, 'bias': 0.0155571585621782}
+December validation {'leaves': 31, 'iterations': 180, 'lr': 0.06, 'n': 2896, 'MAE': 0.21381545705394073, 'RMSE': 0.27633744620297873, 'bias': 0.02327218960160424}
+December validation {'leaves': 15, 'iterations': 300, 'lr': 0.04, 'n': 2896, 'MAE': 0.21403405984466872, 'RMSE': 0.2786927322092059, 'bias': 0.018266227699326665}
+ turbine_id horizon       model  scheduled_rows  missing_targets  fallback_rows   n      MAE     RMSE     bias
+          1    1-24  prediction             744                0              0 744 0.203261 0.262021 0.078396
+          1    1-24 climatology             744                0              0 744 0.302316 0.342159 0.057443
+          1    1-24 persistence             744                0              0 744 0.320750 0.436984 0.021198
+          1   25-48  prediction             720                0              0 720 0.227042 0.285395 0.084444
+          1   25-48 climatology             720                0              0 720 0.300836 0.340908 0.057187
+          1   25-48 persistence             720                0              0 720 0.362604 0.460358 0.022516
+          2    1-24  prediction             744                0              0 744 0.205077 0.264807 0.080081
+          2    1-24 climatology             744                0              0 744 0.303714 0.342508 0.057701
+          2    1-24 persistence             744                0              0 744 0.325995 0.443556 0.024247
+          2   25-48  prediction             720                0              0 720 0.230893 0.291638 0.086210
+          2   25-48 climatology             720                0              0 720 0.302357 0.341403 0.057614
+          2   25-48 persistence             720                0              0 720 0.362664 0.465435 0.026535
+Published 2784 forecasts; fallback rows: 0
+Packaged: /workspace/scratch/509511285190/Vax-Dealers/results/forecast_results.zip

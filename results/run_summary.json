@@ -3,6 +3,14 @@
   "february_rows": 1344,
   "fallback_rows": 0,
   "issues": 29,
-  "model_sha256": "2cc1c1034ca73f711b1a3dd5df5bcf6d9ff86aca786ac079e0fdac36b5b3bffb",
-  "provenance_caveat": "availability_bound_utc is an assumed conservative bound, not observed publication time"
+  "model_sha256": "bad06bc49ef6e50e4c2feca0d53beca9f3d5e053f3f2065c22d5470db5a1a95c",
+  "code_sha256": "89c7cc6d31934e7a584a6fec085174b07317047c00128b00ba6f7d7ead3b1a91",
+  "input_fingerprint": "636f421fbc22c3ae1bf7a6978f4b355c6456202aefe9fedf317c0ae432ade229",
+  "settings_signature": "badebdbf889d460bffce0ffba51aa2deafb19b15297c29dc4fe1708222165e4e",
+  "first_issue": "2026-01-31",
+  "last_issue": "2026-02-28",
+  "weather_cache_problems": [],
+  "historical_availability_verified": false,
+  "time_assumptions_confirmed": false,
+  "provenance_caveat": "availability_bound_utc is assumed, not observed publication time"
 }

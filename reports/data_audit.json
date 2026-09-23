@@ -10,6 +10,7 @@
     "complete_hours": 23667,
     "incomplete_hours": 1725,
     "february_rows": 0,
+    "off_grid_rows": 0,
     "missing_10min_slots": 9992
   },
   "2": {
@@ -23,6 +24,7 @@
     "complete_hours": 24785,
     "incomplete_hours": 607,
     "february_rows": 0,
+    "off_grid_rows": 0,
     "missing_10min_slots": 2853
   }
 }

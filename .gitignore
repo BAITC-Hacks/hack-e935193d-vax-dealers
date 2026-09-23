@@ -6,3 +6,10 @@ cache/
 data/
 models/
 results/agent_events.jsonl
+.tools/
+*.tmp
+results/cycles/
+results/runs/
+results/*.csv
+results/weather_manifest.json
+reports/january_predictions.csv
