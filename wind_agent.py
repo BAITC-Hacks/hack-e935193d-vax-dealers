@@ -3,8 +3,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import math
 import os
+import sys
 from pathlib import Path
 import time
 import urllib.parse
@@ -105,6 +105,8 @@ def fetch_month(tid, start, end, refresh=False):
 def fetch_range(start, end, refresh=False):
     day = pd.Timestamp(start).normalize()
     end = pd.Timestamp(end).normalize()
+    if day > end:
+        raise ValueError('Weather start date must not be after end date')
     while day <= end:
         last = min(day + pd.offsets.MonthEnd(0), end)
         for tid in COORDS:
@@ -153,11 +155,25 @@ def read_weather():
     snapshots.sort(key=lambda item: item[1].get('_provenance',{}).get('retrieved_at',''))
     for path, data in snapshots:
         tid = int(path.name.split('_')[1][1:])
+        if tid not in COORDS:
+            raise ValueError(f'Unknown turbine in weather cache: {path.name}')
+        provenance = data.get('_provenance', {})
+        if (provenance.get('lat'), provenance.get('lon')) != COORDS[tid]:
+            raise ValueError(f'Wrong turbine coordinates in weather cache: {path.name}')
+        if 'previous-runs-api.open-meteo.com/v1/forecast?' not in provenance.get('url', ''):
+            raise ValueError(f'Unexpected weather source in cache: {path.name}')
         h = data['hourly']
         if data['hourly_units']['wind_speed_80m_previous_day1'] != 'm/s':
             raise ValueError('Wrong wind units')
         utc = pd.to_datetime(h['time'], utc=True)
+        if (utc.isna().any() or not utc.is_monotonic_increasing or utc.duplicated().any()
+                or (utc.minute != 0).any() or (utc.second != 0).any()):
+            raise ValueError(f'Invalid hourly weather timestamps: {path.name}')
         for days in [1,2,3]:
+            for name in VARIABLES:
+                key = f'{name}_previous_day{days}'
+                if key not in h or len(h[key]) != len(utc):
+                    raise ValueError(f'Missing or misaligned {key} in {path.name}')
             records.append(pd.DataFrame(dict(valid_utc=utc, turbine_id=tid, offset_days=days,
                 wind=h[f'wind_speed_80m_previous_day{days}'],
                 direction=h[f'wind_direction_80m_previous_day{days}'],
@@ -182,8 +198,12 @@ def safe_offset(lead_hours):
     return np.ceil((np.asarray(lead_hours) + LATENCY_HOURS)/24).astype(int)
 
 def schedule(first_issue, last_issue):
+    first = pd.Timestamp(first_issue).normalize()
+    last = pd.Timestamp(last_issue).normalize()
+    if first > last:
+        raise ValueError('First issue date must not be after last issue date')
     rows = []
-    for day in pd.date_range(first_issue, last_issue, freq='D'):
+    for day in pd.date_range(first, last, freq='D'):
         issue_local = day.normalize() + pd.Timedelta(hours=23)
         issue_utc = (issue_local - OFFSET).tz_localize('UTC')
         for lead in range(1,49):
@@ -276,27 +296,31 @@ def train():
     print(pd.DataFrame(results).to_string(index=False), flush=True)
 
 def replay(first_issue='2026-01-31', last_issue='2026-02-28', refresh=False):
+    plan = schedule(first_issue, last_issue)
+    if pd.Timestamp(first_issue).normalize() < pd.Timestamp('2026-01-31'):
+        raise ValueError('Model includes January interval calibration; replay only from January 31')
+    bundle = joblib.load(ROOT/'models/forecast.joblib')
+    trained_offset = bundle.get('scada_utc_offset_hours')
+    if trained_offset != SCADA_UTC_OFFSET_HOURS:
+        raise ValueError(f'Model trained with SCADA UTC offset {trained_offset}; '
+                         f'current offset is {SCADA_UTC_OFFSET_HOURS:+d}. Re-run prepare and train.')
     events=[]
     def event(state, **details):
         events.append(dict(recorded_at=datetime.now(timezone.utc).isoformat(),state=state,**details))
     event('PLAN', first_issue=first_issue,last_issue=last_issue)
+    fetch_status = 'offline_cache'
     if refresh:
         event('FETCH')
         # Refresh only dates needed for this cycle; failures preserve cached data, flagged below.
         try:
             fetch_range(first_issue, pd.Timestamp(last_issue)+pd.Timedelta(days=3), refresh=True)
+            fetch_status = 'refreshed'
         except Exception as exc:
+            fetch_status = 'cache_after_refresh_failure'
             event('FETCH_FAILED_USE_CACHE',error=str(exc))
-    bundle=joblib.load(ROOT/'models/forecast.joblib')
-    trained_offset = bundle.get('scada_utc_offset_hours', 5)
-    if trained_offset != SCADA_UTC_OFFSET_HOURS:
-        raise ValueError(f'Model trained with SCADA UTC offset {trained_offset:+d}; '
-                         f'current offset is {SCADA_UTC_OFFSET_HOURS:+d}. Re-run prepare and train.')
+            print(f'Weather refresh failed; using cache: {exc}',file=sys.stderr,flush=True)
     weather=read_weather()
-    output=forecast_frame(schedule(first_issue,last_issue),weather)
-    # Strict production replay refuses pre-training origins.
-    if output.issue_utc.min() < pd.Timestamp('2026-01-31T18:00Z'):
-        raise ValueError('Model includes January interval calibration; replay only from January 31')
+    output=forecast_frame(plan,weather)
     good=output[['wind','direction','temp']].notna().all(axis=1)
     good &= output.wind.between(0,80) & output.temp.between(-70,70) & output.direction.between(0,360)
     output['prediction']=output.turbine_id.map(bundle['means'])
@@ -338,6 +362,7 @@ def replay(first_issue='2026-01-31', last_issue='2026-02-28', refresh=False):
         for item in events: f.write(json.dumps(item,ensure_ascii=False)+'\n')
     dump(results_dir/'run_summary.json',dict(rows=len(output),february_rows=len(submission),
         fallback_rows=int((~good).sum()),issues=int(output.issue_utc.nunique()), model_sha256=model_hash,
+        fetch_status=fetch_status,
         provenance_caveat='availability_bound_utc is an assumed conservative bound, not observed publication time'))
     print('Published',len(output),'forecasts; fallback rows:',int((~good).sum()),flush=True)
 
