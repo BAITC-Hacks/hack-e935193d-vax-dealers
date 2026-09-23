@@ -18,6 +18,8 @@ import pandas as pd
 from sklearn.ensemble import HistGradientBoostingRegressor
 from threadpoolctl import threadpool_limits
 import joblib
+from result_checks import check_results, file_hashes
+from dashboard import build_dashboard
 from weather_archive import (
     atomic_json,
     fetch_month as download_month,
@@ -77,6 +79,14 @@ def dump(path, data):
 
 def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def atomic_csv(frame, path, index=False):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    frame.to_csv(temporary, index=index)
+    temporary.replace(path)
 
 
 def fetch_month(tid, start, end, refresh=False):
@@ -583,8 +593,10 @@ def replay(
         ]
         if previous.get("february_rows", 0):
             expected_files.append("station_february.csv")
-        if previous.get("input_fingerprint") == fingerprint and all(
-            (results_dir / name).exists() for name in expected_files
+        if (
+            previous.get("input_fingerprint") == fingerprint
+            and all((results_dir / name).exists() for name in expected_files)
+            and previous.get("artifact_sha256") == file_hashes(results_dir)
         ):
             event(
                 "UNCHANGED",
@@ -660,8 +672,8 @@ def replay(
             )
 
     results_dir.mkdir(parents=True, exist_ok=True)
-    output.to_csv(results_dir / "forecasts_48h.csv", index=False)
-    submission.to_csv(results_dir / "submission_february.csv", index=False)
+    atomic_csv(output, results_dir / "forecasts_48h.csv")
+    atomic_csv(submission, results_dir / "submission_february.csv")
     if not submission.empty:
         station = submission.pivot(
             index="valid_local", columns="turbine_id", values="prediction"
@@ -670,7 +682,7 @@ def replay(
             columns={1: "turbine_1_normalized", 2: "turbine_2_normalized"}
         )
         station["equal_capacity_mean_assumption"] = station.mean(axis=1, skipna=False)
-        station.to_csv(results_dir / "station_february.csv")
+        atomic_csv(station, results_dir / "station_february.csv", index=True)
     manifest = json.loads(
         (ROOT / "reports/weather_manifest.json").read_text(encoding="utf-8")
     )
@@ -686,6 +698,8 @@ def replay(
         settings_signature=settings_signature(),
         first_issue=first_issue,
         last_issue=last_issue,
+        utc_offset_hours=CONFIG["utc_offset_hours"],
+        artifact_sha256=file_hashes(results_dir),
         weather_cache_problems=json.loads(
             (ROOT / "reports/weather_cache_problems.json").read_text()
         ),
@@ -729,12 +743,18 @@ def package_results():
         raise ValueError(
             "Code/configuration changed since replay; repeat replay before packaging"
         )
+    check = check_results(ROOT)
+    dump(ROOT / "reports/result_validation.json", check)
+    if not check["valid"]:
+        raise ValueError("Results failed validation: " + "; ".join(check["errors"]))
+    build_dashboard(ROOT)
     files = [
         "forecasts_48h.csv",
         "submission_february.csv",
         "station_february.csv",
         "weather_manifest.json",
         "run_summary.json",
+        "dashboard.html",
     ]
     path = ROOT / "results/forecast_results.zip"
     with zipfile.ZipFile(
@@ -749,12 +769,21 @@ def package_results():
         "config.json",
         "wind_agent.py",
         "weather_archive.py",
+        "result_checks.py",
+        "dashboard.py",
+        "ui/dashboard.html",
+        "ui/dashboard.css",
+        "ui/dashboard.js",
+        "ui/forecast_logic.js",
         "tests/test_agent.py",
         "tests/test_regressions.py",
+        "tests/test_results.py",
         "reports/data_audit.json",
         "reports/model_card.json",
         "reports/january_metrics.csv",
         "reports/weather_manifest.json",
+        "reports/result_validation.json",
+        "docs/demo.md",
         "results/run_summary.json",
         "results/forecast_results.zip",
     ]
@@ -813,6 +842,16 @@ def main():
     command.add_argument("--issue-date", required=True)
     command.add_argument("--interval-seconds", type=int, default=3600)
     sub.add_parser("status", help="Показать наличие данных, модели и результатов")
+    sub.add_parser("dashboard", help="Создать автономную панель results/dashboard.html")
+    command = sub.add_parser(
+        "check", help="Проверить готовые CSV или архив без модели и сети"
+    )
+    command.add_argument(
+        "--archive", action="store_true", help="Проверять только сохранённый ZIP"
+    )
+    command.add_argument(
+        "--strict", action="store_true", help="Требовать также подтверждённых допущений"
+    )
     sub.add_parser(
         "package", help="Упаковать полный пересчёт и обновить контрольные суммы"
     )
@@ -845,6 +884,16 @@ def main():
             )
         elif args.command == "status":
             status()
+        elif args.command == "dashboard":
+            print("Панель создана:", build_dashboard(ROOT))
+        elif args.command == "check":
+            report = check_results(ROOT, archive_only=args.archive)
+            dump(ROOT / "reports/result_validation.json", report)
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+            if not report["valid"] or (
+                args.strict and not report["assumptions_confirmed"]
+            ):
+                parser.exit(2, "Проверка не пройдена. Причины указаны выше.\n")
         elif args.command == "package":
             package_results()
         elif args.command == "run":

@@ -1,0 +1,16 @@
+{
+  "valid": true,
+  "assumptions_confirmed": false,
+  "errors": [],
+  "warnings": [
+    "Часовой пояс и смысл временных меток CSV не подтверждены организаторами",
+    "Историческое время публикации погодных выпусков не подтверждено"
+  ],
+  "counts": {
+    "forecast_rows": 2784,
+    "february_rows": 1344,
+    "issues": 29,
+    "fallback_rows": 0
+  },
+  "source": "files"
+}

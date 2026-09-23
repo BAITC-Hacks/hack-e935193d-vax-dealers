@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Vax-Dealers · Прогноз ВЭС</title>
+    <style>
+      __DASHBOARD_STYLE__
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <div class="brand">VAX / DEALERS</div>
+        <div class="tag">HACKALEM AI · ВЕТРОЭНЕРГЕТИКА</div>
+      </div>
+      <span class="topstatus">Автономный просмотр</span>
+    </header>
+    <main>
+      <section class="hero">
+        <div>
+          <div class="eyebrow">Две турбины · горизонт 48 часов</div>
+          <h1>Почасовой прогноз ВЭС</h1>
+          <p>
+            Выберите выпуск и сравните ожидаемую мощность турбин. Все числа
+            взяты из сохранённого расчёта проекта.
+          </p>
+        </div>
+        <div class="period">
+          <span>Период подачи</span><strong>Февраль 2026</strong
+          ><span id="timezone"></span>
+        </div>
+      </section>
+      <section class="panel filters" aria-label="Настройки просмотра">
+        <div class="field">
+          <label for="issue">Дата выпуска, 23:00</label
+          ><select id="issue"></select>
+        </div>
+        <div class="field">
+          <label for="turbine">Турбина</label
+          ><select id="turbine">
+            <option value="all">Обе турбины</option>
+            <option value="1">Турбина 1</option>
+            <option value="2">Турбина 2</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="horizon">Горизонт</label
+          ><select id="horizon">
+            <option value="48">Следующие 48 часов</option>
+            <option value="24">Следующие 24 часа</option>
+          </select>
+        </div>
+        <button class="button download" id="download" type="button">
+          Скачать выбранные строки CSV
+        </button>
+      </section>
+      <section
+        class="kpis"
+        aria-label="Сводка выбранного прогноза"
+        aria-live="polite"
+      >
+        <div class="kpi">
+          <label>Среднее прогнозов</label><strong id="mean">—</strong
+          ><small>Нормализованная мощность</small>
+        </div>
+        <div class="kpi">
+          <label>Минимум / максимум</label><strong id="range">—</strong
+          ><small>По выбранным строкам</small>
+        </div>
+        <div class="kpi">
+          <label>Почасовых прогнозов</label><strong id="count">—</strong
+          ><small id="countnote">—</small>
+        </div>
+        <div class="kpi">
+          <label>Резервных значений</label><strong id="fallback">—</strong
+          ><small>При недоступной погоде</small>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <h2>Мощность по часам</h2>
+            <p id="chart-period"></p>
+          </div>
+          <div class="legend">
+            <span>Турбина 1</span><span class="second">Турбина 2</span>
+          </div>
+        </div>
+        <svg
+          id="chart"
+          class="chart"
+          viewBox="0 0 1120 360"
+          role="img"
+          aria-label="Почасовой прогноз нормализованной мощности"
+        ></svg>
+        <p class="chart-note">
+          Шкала 0–1. Заливка — эмпирический диапазон lower90–upper90, без
+          гарантии 90% покрытия. Наведите на точку для значения; все значения
+          также доступны в таблице.
+        </p>
+      </section>
+      <div class="notice">
+        <strong>Что означают эти числа</strong>
+        <p>
+          Это нормализованная мощность, не МВт и не МВт·ч. Фактических измерений
+          за февраль нет — график показывает прогноз. Часовой пояс и
+          историческое время публикации погоды пока не подтверждены.
+        </p>
+      </div>
+      <div class="columns">
+        <section class="panel">
+          <h2>Проверка на январе</h2>
+          <p>Средняя абсолютная ошибка (MAE). Меньше — лучше.</p>
+          <div class="table-wrap" id="metrics"></div>
+          <p class="metric-note">
+            Январь исключён из обучения точечного прогноза. Его ошибки
+            использованы для диапазонов неопределённости. MAE 0,20 не означает
+            «точность 80%».
+          </p>
+        </section>
+        <section class="panel">
+          <h2>Проверка результатов</h2>
+          <ul class="checklist" id="checks"></ul>
+          <details>
+            <summary>Что нужно подтвердить</summary>
+            <div id="assumptions"></div>
+          </details>
+        </section>
+      </div>
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <h2>Почасовые значения</h2>
+            <p>Время отображается в принятом часовом поясе проекта.</p>
+          </div>
+          <span class="badge" id="table-count"></span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Местное время</th>
+                <th>Турбина</th>
+                <th>Мощность</th>
+                <th>Диапазон</th>
+                <th>Ветер, м/с</th>
+                <th>Режим</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="panel">
+        <details>
+          <summary>Исходные измерения и ограничения</summary>
+          <div id="audit"></div>
+          <p>
+            В обучение допускаются только часы с шестью корректными измерениями.
+            Пропуски не считаются нулевой мощностью. Ветер на 80 м — признак
+            погодной модели; высота ступицы не подтверждена.
+          </p>
+        </details>
+      </section>
+      <footer class="foot">
+        <span>Vax-Dealers · архив прогнозов Open-Meteo / NOAA</span
+        ><span>Работает без интернета · данные встроены в этот файл</span>
+      </footer>
+    </main>
+    <script id="forecast-data" type="application/json">
+      __FORECAST_DATA__
+    </script>
+    <script>
+      __DASHBOARD_SCRIPT__;
+    </script>
+  </body>
+</html>

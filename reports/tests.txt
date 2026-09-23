@@ -27,8 +27,23 @@ test_unfinished_hour_is_excluded_from_training_and_selection (test_regressions.R
 test_watch_skips_prediction_when_inputs_unchanged (test_regressions.RegressionTests.test_watch_skips_prediction_when_inputs_unchanged) ... Published 96 forecasts; fallback rows: 96
 Input unchanged; existing forecast kept.
 ok
+Published 2784 forecasts; fallback rows: 2784
+test_archive_does_not_mix_with_partial_new_files (test_results.ResultTests.test_archive_does_not_mix_with_partial_new_files) ... ok
+test_changed_bytes_fail_integrity_check (test_results.ResultTests.test_changed_bytes_fail_integrity_check) ... ok
+test_complete_results_are_valid_but_assumptions_remain_unconfirmed (test_results.ResultTests.test_complete_results_are_valid_but_assumptions_remain_unconfirmed) ... ok
+test_corrupted_output_is_recomputed_by_watch (test_results.ResultTests.test_corrupted_output_is_recomputed_by_watch) ... Published 96 forecasts; fallback rows: 96
+Published 96 forecasts; fallback rows: 96
+ok
+test_dashboard_is_self_contained_and_json_cannot_close_script (test_results.ResultTests.test_dashboard_is_self_contained_and_json_cannot_close_script) ... ok
+test_interval_must_contain_prediction (test_results.ResultTests.test_interval_must_contain_prediction) ... ok
+test_malformed_summary_returns_failure_not_success (test_results.ResultTests.test_malformed_summary_returns_failure_not_success) ... ok
+test_missing_archive_member_is_rejected (test_results.ResultTests.test_missing_archive_member_is_rejected) ... ok
+test_missing_hour_is_detected_even_with_updated_hashes (test_results.ResultTests.test_missing_hour_is_detected_even_with_updated_hashes) ... ok
+test_station_must_match_turbine_predictions (test_results.ResultTests.test_station_must_match_turbine_predictions) ... ok
+test_submission_must_match_day_ahead_forecasts (test_results.ResultTests.test_submission_must_match_day_ahead_forecasts) ... ok
+test_wrong_horizon_is_detected_even_with_updated_hashes (test_results.ResultTests.test_wrong_horizon_is_detected_even_with_updated_hashes) ... ok
 
 ----------------------------------------------------------------------
-Ran 24 tests in 1.171s
+Ran 36 tests in 3.354s
 
 OK

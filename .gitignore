@@ -13,3 +13,5 @@ results/runs/
 results/*.csv
 results/weather_manifest.json
 reports/january_predictions.csv
+results/dashboard.html
+.qa/
