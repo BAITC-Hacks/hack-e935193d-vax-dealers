@@ -1,0 +1,67 @@
+{
+  "selection": [
+    {
+      "leaves": 15,
+      "iterations": 180,
+      "lr": 0.06,
+      "n": 2900,
+      "MAE": 0.21510639696540387,
+      "RMSE": 0.2790132098589068,
+      "bias": 0.020027138164866985
+    },
+    {
+      "leaves": 31,
+      "iterations": 180,
+      "lr": 0.06,
+      "n": 2900,
+      "MAE": 0.21456653321393024,
+      "RMSE": 0.27835204447864903,
+      "bias": 0.026659896673058223
+    },
+    {
+      "leaves": 15,
+      "iterations": 300,
+      "lr": 0.04,
+      "n": 2900,
+      "MAE": 0.21509851038202774,
+      "RMSE": 0.2797095602252675,
+      "bias": 0.02117323152296643
+    }
+  ],
+  "selected": {
+    "leaves": 31,
+    "iterations": 180,
+    "lr": 0.06,
+    "n": 2900,
+    "MAE": 0.21456653321393024,
+    "RMSE": 0.27835204447864903,
+    "bias": 0.026659896673058223
+  },
+  "training_rows": 85980,
+  "training_unique_hours": 28660,
+  "train_target_end": "2025-12-31 23:00 local",
+  "validation": "2025-12",
+  "test_and_interval_calibration": "2026-01",
+  "interval_radii": {
+    "1_1": 0.45691700953298237,
+    "1_2": 0.5130962297208785,
+    "2_1": 0.45495340452999744,
+    "2_2": 0.5176827282613132
+  },
+  "features": [
+    "wind",
+    "temp",
+    "direction_sin",
+    "direction_cos",
+    "hour_sin",
+    "hour_cos",
+    "month_sin",
+    "month_cos",
+    "offset_days",
+    "turbine_id"
+  ],
+  "target": "mean normalized active power",
+  "timezone_assumption": "UTC+05:00",
+  "weather_latency_assumption_hours": 12,
+  "archive_provenance": "Fixed lead offsets; publication timestamps not supplied by API"
+}

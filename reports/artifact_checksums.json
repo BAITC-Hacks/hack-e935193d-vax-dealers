@@ -1,0 +1,14 @@
+{
+  "README.md": "6afae76d9696b602fb108feab413fc6f416e72e8af1f761b2c2fbe3894e84711",
+  "wind_agent.py": "89222a2d5194f268d808910ec3a3e99f95d497bc704561d44a4eb518c1b101dc",
+  "requirements.txt": "45491584225d9203cdc374c299060987d033e0470953931253caf12654219127",
+  ".gitignore": "31558b4e52235bc6a7434c4f51c2ce0519eaea5c02277bb4d5dab3ec498bbf6d",
+  "tests/test_agent.py": "140fe38ef28150cf5972ed089e4ec1f079e1b596366103d311231da6e0cc4d0a",
+  "reports/data_audit.json": "215d5051fefae7a76d9566746e9df103b29686b365fffa845c54b277ed637129",
+  "reports/model_card.json": "494fc5d73b40800e67b6a1f929617fc5bdba822ca4ed13dab4bcc9de04ac9822",
+  "reports/january_metrics.csv": "7669cbd78044b7dd0dedf2dec38e438128297ae9a45213abdb60437f4ab2e349",
+  "reports/tests.txt": "ce4662699d7bf1e9002a5ad225559de477d2ce104efdbaa9ae2fe3b35191a877",
+  "reports/weather_manifest.json": "c2516190a8365da1ba276dc9875ad0b19e58325db15ebab0a969cc31d9abb248",
+  "results/run_summary.json": "a8dde5b0a0352bf90de900726e7097b22b9d7b86608ed2a72a1ca2464a08618e",
+  "results/forecast_results.zip": "c359524e0d8450e932ef62ac6b918f1152043a8abf71cfbbef499f94b5750432"
+}

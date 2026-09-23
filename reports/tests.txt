@@ -1,0 +1,13 @@
+Published 96 forecasts; fallback rows: 96
+test_agent_publishes_explicit_fallback_when_weather_missing (test_agent.AgentTests.test_agent_publishes_explicit_fallback_when_weather_missing) ... ok
+test_duplicate_scada_is_rejected (test_agent.AgentTests.test_duplicate_scada_is_rejected) ... ok
+test_february_has_one_day_ahead_prediction_per_hour (test_agent.AgentTests.test_february_has_one_day_ahead_prediction_per_hour) ... ok
+test_future_weather_guard_all_horizons (test_agent.AgentTests.test_future_weather_guard_all_horizons) ... ok
+test_hourly_target_requires_all_six_measurements (test_agent.AgentTests.test_hourly_target_requires_all_six_measurements) ... ok
+test_missing_weather_is_preserved_for_fallback (test_agent.AgentTests.test_missing_weather_is_preserved_for_fallback) ... ok
+test_no_actual_power_or_scada_wind_in_features (test_agent.AgentTests.test_no_actual_power_or_scada_wind_in_features) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.279s
+
+OK

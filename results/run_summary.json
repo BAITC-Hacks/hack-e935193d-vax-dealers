@@ -1,0 +1,8 @@
+{
+  "rows": 2784,
+  "february_rows": 1344,
+  "fallback_rows": 0,
+  "issues": 29,
+  "model_sha256": "2cc1c1034ca73f711b1a3dd5df5bcf6d9ff86aca786ac079e0fdac36b5b3bffb",
+  "provenance_caveat": "availability_bound_utc is an assumed conservative bound, not observed publication time"
+}

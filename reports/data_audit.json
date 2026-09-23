@@ -1,0 +1,28 @@
+{
+  "1": {
+    "file": "Dataset HackAlemAI для участников 11.03.2023-28.02.2026 - turbine 1.csv",
+    "sha256": "c4c341582fb2dd348b7187f0128cff265fe055f469413871ebb5db50eef58b5b",
+    "rows": 142360,
+    "start": "2023-03-11 00:00:00",
+    "end": "2026-01-31 23:50:00",
+    "invalid_rows": 0,
+    "total_hours": 25392,
+    "complete_hours": 23667,
+    "incomplete_hours": 1725,
+    "february_rows": 0,
+    "missing_10min_slots": 9992
+  },
+  "2": {
+    "file": "Dataset HackAlemAI для участников 11.03.2023-28.02.2026 - turbine 2.csv",
+    "sha256": "820578cd18bb557cd30c2e102f3ae5a386dfc6c489a5a15743339c2b017305e5",
+    "rows": 149499,
+    "start": "2023-03-11 00:00:00",
+    "end": "2026-01-31 23:50:00",
+    "invalid_rows": 0,
+    "total_hours": 25392,
+    "complete_hours": 24785,
+    "incomplete_hours": 607,
+    "february_rows": 0,
+    "missing_10min_slots": 2853
+  }
+}
