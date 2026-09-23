@@ -1,0 +1,53 @@
+{
+  "inference": "indeterminate_from_naive_csv",
+  "civil_time_2026": "Asia/Almaty (UTC+05:00)",
+  "civil_time_source": "https://primeminister.kz/ru/decisions/19012024-20",
+  "assumed_scada_utc_offset_hours": 5,
+  "warning": "The files contain no UTC offset or independently synchronized timestamp. Local civil time does not establish the controller clock or the interval-label convention.",
+  "turbines": {
+    "1": {
+      "source": "Dataset HackAlemAI для участников 11.03.2023-28.02.2026 - turbine 1.csv",
+      "transition_day_counts": {
+        "2024-02-29": 144,
+        "2024-03-01": 144
+      },
+      "transition_duplicate_labels": 0,
+      "winter_temperature_clock_hours": {
+        "winter_2023_24": {
+          "coldest_hour": 8,
+          "warmest_hour": 15
+        },
+        "winter_2024_25": {
+          "coldest_hour": 7,
+          "warmest_hour": 14
+        },
+        "winter_2025_26": {
+          "coldest_hour": 8,
+          "warmest_hour": 15
+        }
+      }
+    },
+    "2": {
+      "source": "Dataset HackAlemAI для участников 11.03.2023-28.02.2026 - turbine 2.csv",
+      "transition_day_counts": {
+        "2024-02-29": 144,
+        "2024-03-01": 144
+      },
+      "transition_duplicate_labels": 0,
+      "winter_temperature_clock_hours": {
+        "winter_2023_24": {
+          "coldest_hour": 8,
+          "warmest_hour": 15
+        },
+        "winter_2024_25": {
+          "coldest_hour": 7,
+          "warmest_hour": 14
+        },
+        "winter_2025_26": {
+          "coldest_hour": 8,
+          "warmest_hour": 15
+        }
+      }
+    }
+  }
+}

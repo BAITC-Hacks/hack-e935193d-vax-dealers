@@ -24,6 +24,32 @@ class AgentTests(unittest.TestCase):
         self.assertEqual(feb.groupby('turbine_id').size().to_dict(),{1:672,2:672})
         self.assertFalse(feb.duplicated(['valid_local','turbine_id']).any())
 
+    def test_scada_offset_moves_utc_and_rejects_stale_model(self):
+        try:
+            agent.set_scada_offset(6)
+            plan=agent.schedule('2026-01-31','2026-01-31')
+            self.assertEqual(str(plan.issue_utc.iloc[0]),'2026-01-31 17:00:00+00:00')
+            weather=plan[['valid_utc','valid_local','turbine_id','offset_days']].copy()
+            for col in ['wind','temp','direction']: weather[col]=np.nan
+            with tempfile.TemporaryDirectory() as tmp:
+                root=Path(tmp)
+                (root/'models').mkdir()
+                bundle={'scada_utc_offset_hours':5}
+                with patch.object(agent,'ROOT',root),patch.object(agent,'read_weather',return_value=weather),patch.object(agent.joblib,'load',return_value=bundle),self.assertRaisesRegex(ValueError,'Model trained'):
+                    agent.replay('2026-01-31','2026-01-31')
+        finally:
+            agent.set_scada_offset(5)
+
+    def test_timezone_audit_does_not_claim_utc_from_naive_labels(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            for tid in [1,2]:
+                times=pd.date_range('2024-02-29',periods=288,freq='10min')
+                pd.DataFrame({'id':range(288),'time':times,'wind':5.,'power':.3,'temp':10.}).to_csv(root/f'turbine {tid}.csv',index=False)
+            with patch.object(agent,'ROOT',root): report=agent.timezone_audit(root)
+            self.assertEqual(report['inference'],'indeterminate_from_naive_csv')
+            self.assertEqual(report['turbines']['1']['transition_day_counts'],{'2024-02-29':144,'2024-03-01':144})
+
     def test_hourly_target_requires_all_six_measurements(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)
@@ -61,7 +87,7 @@ class AgentTests(unittest.TestCase):
     def test_agent_publishes_explicit_fallback_when_weather_missing(self):
         weather=agent.schedule('2026-01-31','2026-01-31')[['valid_utc','valid_local','turbine_id','offset_days']].copy()
         for col in ['wind','temp','direction']: weather[col]=np.nan
-        bundle={'model':None,'means':{1:.3,2:.4},'radii':{'1_1':.2,'1_2':.2,'2_1':.2,'2_2':.2}}
+        bundle={'model':None,'means':{1:.3,2:.4},'radii':{'1_1':.2,'1_2':.2,'2_1':.2,'2_2':.2},'scada_utc_offset_hours':5}
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)
             with patch.object(agent,'ROOT',root),patch.object(agent,'read_weather',return_value=weather),patch.object(agent.joblib,'load',return_value=bundle),patch.object(agent,'digest',return_value='test-model'):

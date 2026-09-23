@@ -24,8 +24,52 @@ COORDS = {1: (43.645150, 78.535604), 2: (43.643198, 78.538828)}
 VARIABLES = ['wind_speed_80m', 'wind_direction_80m', 'temperature_2m']
 FEATURES = ['wind', 'temp', 'direction_sin', 'direction_cos', 'hour_sin',
             'hour_cos', 'month_sin', 'month_cos', 'offset_days', 'turbine_id']
-OFFSET = pd.Timedelta(hours=5)  # Unconfirmed CSV timezone assumption, explicit in README.
+SCADA_UTC_OFFSET_HOURS = 5  # 2026 civil time; SCADA clock origin cannot be proven from naive CSV timestamps.
+OFFSET = pd.Timedelta(hours=SCADA_UTC_OFFSET_HOURS)
 LATENCY_HOURS = 12
+
+def set_scada_offset(hours):
+    """Use one explicitly chosen SCADA clock offset for all UTC/forecast joins."""
+    global SCADA_UTC_OFFSET_HOURS, OFFSET
+    if not isinstance(hours, int) or not -12 <= hours <= 14:
+        raise ValueError('SCADA UTC offset must be an integer between -12 and +14 hours')
+    SCADA_UTC_OFFSET_HOURS = hours
+    OFFSET = pd.Timedelta(hours=hours)
+
+def timezone_audit(data_dir):
+    """Record evidence about CSV wall-clock labels without claiming an unrecorded UTC offset."""
+    report = {
+        'inference': 'indeterminate_from_naive_csv',
+        'civil_time_2026': 'Asia/Almaty (UTC+05:00)',
+        'civil_time_source': 'https://primeminister.kz/ru/decisions/19012024-20',
+        'assumed_scada_utc_offset_hours': SCADA_UTC_OFFSET_HOURS,
+        'warning': 'The files contain no UTC offset or independently synchronized timestamp. '
+                   'Local civil time does not establish the controller clock or the interval-label convention.',
+        'turbines': {},
+    }
+    for tid in COORDS:
+        matches = list(Path(data_dir).glob(f'*turbine {tid}.csv'))
+        if len(matches) != 1:
+            raise ValueError(f'Expected one turbine {tid}.csv, got {matches}')
+        raw = pd.read_csv(matches[0], usecols=[1, 4])
+        raw.columns = ['time', 'temp']
+        raw['time'] = pd.to_datetime(raw.time, errors='raise')
+        transition = raw[(raw.time >= '2024-02-29') & (raw.time < '2024-03-02')]
+        counts = transition.groupby(transition.time.dt.strftime('%Y-%m-%d')).size().to_dict()
+        winter_hours = {}
+        for label, start, end in [('winter_2023_24', '2023-12-01', '2024-03-01'),
+                                  ('winter_2024_25', '2024-12-01', '2025-03-01'),
+                                  ('winter_2025_26', '2025-12-01', '2026-02-01')]:
+            winter = raw[(raw.time >= start) & (raw.time < end)]
+            hourly = winter.groupby(winter.time.dt.hour).temp.mean()
+            if len(hourly) == 24:
+                winter_hours[label] = dict(coldest_hour=int(hourly.idxmin()),
+                                           warmest_hour=int(hourly.idxmax()))
+        report['turbines'][str(tid)] = dict(source=matches[0].name,
+            transition_day_counts=counts, transition_duplicate_labels=int(transition.time.duplicated().sum()),
+            winter_temperature_clock_hours=winter_hours)
+    dump(ROOT/'reports/timezone_audit.json', report)
+    return report
 
 def dump(path, data):
     path = Path(path); path.parent.mkdir(parents=True, exist_ok=True)
@@ -219,14 +263,15 @@ def train():
             # Empirical temporal calibration; no exchangeability/coverage guarantee claimed.
             radii[f'{tid}_{h}']=float(np.quantile(errors,.9,method='higher'))
     (ROOT/'models').mkdir(exist_ok=True)
-    joblib.dump(dict(model=model, means=means, radii=radii, features=FEATURES), ROOT/'models/forecast.joblib')
+    joblib.dump(dict(model=model, means=means, radii=radii, features=FEATURES,
+                     scada_utc_offset_hours=SCADA_UTC_OFFSET_HOURS), ROOT/'models/forecast.joblib')
     jan.to_csv(ROOT/'reports/january_predictions.csv',index=False)
     pd.DataFrame(results).to_csv(ROOT/'reports/january_metrics.csv',index=False)
     dump(ROOT/'reports/model_card.json',dict(selection=scores, selected=best, training_rows=len(final_rows),
         training_unique_hours=final_rows[['valid_local','turbine_id']].drop_duplicates().shape[0],
         train_target_end='2025-12-31 23:00 local', validation='2025-12', test_and_interval_calibration='2026-01',
         interval_radii=radii, features=FEATURES, target='mean normalized active power',
-        timezone_assumption='UTC+05:00', weather_latency_assumption_hours=LATENCY_HOURS,
+        timezone_assumption=f'UTC{SCADA_UTC_OFFSET_HOURS:+03d}:00', weather_latency_assumption_hours=LATENCY_HOURS,
         archive_provenance='Fixed lead offsets; publication timestamps not supplied by API'))
     print(pd.DataFrame(results).to_string(index=False), flush=True)
 
@@ -243,6 +288,10 @@ def replay(first_issue='2026-01-31', last_issue='2026-02-28', refresh=False):
         except Exception as exc:
             event('FETCH_FAILED_USE_CACHE',error=str(exc))
     bundle=joblib.load(ROOT/'models/forecast.joblib')
+    trained_offset = bundle.get('scada_utc_offset_hours', 5)
+    if trained_offset != SCADA_UTC_OFFSET_HOURS:
+        raise ValueError(f'Model trained with SCADA UTC offset {trained_offset:+d}; '
+                         f'current offset is {SCADA_UTC_OFFSET_HOURS:+d}. Re-run prepare and train.')
     weather=read_weather()
     output=forecast_frame(schedule(first_issue,last_issue),weather)
     # Strict production replay refuses pre-training origins.
@@ -294,17 +343,24 @@ def replay(first_issue='2026-01-31', last_issue='2026-02-28', refresh=False):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--scada-utc-offset-hours', type=int, default=5,
+                   help='Assumed offset of naive CSV timestamps from UTC (default: +5, unverified)')
     sub=p.add_subparsers(dest='command',required=True)
     q=sub.add_parser('prepare');q.add_argument('--data-dir',required=True)
+    q=sub.add_parser('timezone-audit');q.add_argument('--data-dir',required=True)
     q=sub.add_parser('fetch');q.add_argument('--start',default='2024-04-01');q.add_argument('--end',default='2026-03-02');q.add_argument('--refresh',action='store_true')
     sub.add_parser('train')
-    q=sub.add_parser('replay');q.add_argument('--first-issue',default='2026-01-31');q.add_argument('--last-issue',default='2026-02-28');q.add_argument('--refresh',action='store_true')
+    q=sub.add_parser('replay');q.add_argument('--first-issue',default='2026-01-31');q.add_argument('--last-issue',default='2026-02-28');q.add_argument('--offline',action='store_true',help='Use previously downloaded weather only')
     q=sub.add_parser('watch');q.add_argument('--issue-date',required=True);q.add_argument('--interval-seconds',type=int,default=3600)
     args=p.parse_args()
-    if args.command=='prepare': prepare(args.data_dir)
+    set_scada_offset(args.scada_utc_offset_hours)
+    if args.command=='prepare':
+        prepare(args.data_dir)
+        timezone_audit(args.data_dir)
+    elif args.command=='timezone-audit': print(json.dumps(timezone_audit(args.data_dir),ensure_ascii=False,indent=2))
     elif args.command=='fetch': fetch_range(args.start,args.end,args.refresh)
     elif args.command=='train': train()
-    elif args.command=='replay': replay(args.first_issue,args.last_issue,args.refresh)
+    elif args.command=='replay': replay(args.first_issue,args.last_issue,refresh=not args.offline)
     else:
         if args.interval_seconds<60: p.error('Minimum interval is 60 seconds')
         while True:
